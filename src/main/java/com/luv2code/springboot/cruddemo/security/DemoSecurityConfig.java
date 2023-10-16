@@ -38,19 +38,40 @@ public class DemoSecurityConfig {
      * to restric URLs
      * 
      */
-    /* ---------------CURRENT LESSON -----------------------
+    /* ---------------PREVIOUS LESSON -----------------------
      * adding support for JDBC .. no more hardcoded users
 	/* 1. passing datasource as a paramater to the method
 	 * 2. spring by default goes to the db and fetch the user table and
 	 * the authoritues table to get the credentials and the roles
 	 * by defining Datasource
-	 * 
-	 * 
+    /* ---------------CURRENT LESSON -----------------------
+	 * now we will add some custom tables 
+	 * instead of users and roles i added members and roles
+	 * now i should let spring boot know about users and roles them by adding 
+	 * custom queries e.g. select .. from members 
+	 * STEPS:
+	 * 1. Drop users and roles tables
+	 * 2. refactor jdbcUserDetailsManager and introduce new local variable 
+	 * 3. "?" in the query is just a placeholder .. the actual vakue will be placed
+	 * in the URL -> passed in the login form 
+	 * 4. after seeing the loggs i found out some error in writing the 2nd query
+	 * 5. change pw for susan to ahmedelemary and it worked :))
 	 */
     
 	@Bean
 	public UserDetailsManager userDetailsManager(DataSource dataSource) {
-		return new JdbcUserDetailsManager(dataSource);
+		
+		//define a local variable
+		JdbcUserDetailsManager jdbcUserDetailsManager = new JdbcUserDetailsManager(dataSource);
+		//define query to retrieve user by username
+		jdbcUserDetailsManager.setUsersByUsernameQuery(
+				"select user_id , pw, active from members where user_id = ?");
+		//define query to retrieve authorities by username
+		jdbcUserDetailsManager.setAuthoritiesByUsernameQuery(
+				"select user_id, role from roles where user_id = ?");
+
+		
+		return jdbcUserDetailsManager;
 		
 	}
     @Bean
